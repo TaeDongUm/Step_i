@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -9,6 +12,7 @@ const Register = () => {
     confirm: '',
     agree: false
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,9 +22,48 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // 회원가입 처리 로직 자리
+    setError('');
+
+    // 비밀번호 확인
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // 이용약관 동의 확인
+    if (!form.agree) {
+      setError('Please agree to the terms of service and privacy policy');
+      return;
+    }
+
+    try {
+      console.log('Sending registration request with data:', {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password
+      });
+
+      const response = await axios.post('http://localhost:8080/api/auth/register', {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password
+      });
+
+      console.log('Registration response:', response);
+
+      if (response.status === 201) {
+        // 회원가입 성공 시 로그인 페이지로 이동
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      console.error('Error response:', err.response);
+      setError(err.response?.data || 'Registration failed');
+    }
   };
 
   return (
@@ -42,6 +85,9 @@ const Register = () => {
         <div style={{ color: '#888', fontSize: 15, marginBottom: 24 }}>
           Enter your information to get started
         </div>
+        {error && (
+          <div style={{ color: '#ff4d4f', marginBottom: 16, fontSize: 14 }}>{error}</div>
+        )}
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
             <label style={{ fontWeight: 500 }}>First name</label>
