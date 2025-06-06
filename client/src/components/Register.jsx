@@ -27,7 +27,7 @@ const Register = () => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
-        <div style={{ fontWeight: 600, fontSize: 20 }}>RoutineRise</div>
+        <div style={{ fontWeight: 600, fontSize: 20 }}>Stepi</div>
       </div>
       <form onSubmit={handleSubmit} style={{
         background: '#fff',
