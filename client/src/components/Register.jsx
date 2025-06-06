@@ -46,12 +46,20 @@ const Register = () => {
         password: form.password
       });
 
-      const response = await axios.post('http://localhost:8080/api/auth/register', {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password
-      });
+      const response = await axios.post('http://localhost:8080/api/auth/register',
+        {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true
+        }
+      );
 
       console.log('Registration response:', response);
 
@@ -61,8 +69,20 @@ const Register = () => {
       }
     } catch (err) {
       console.error('Registration error:', err);
-      console.error('Error response:', err.response);
-      setError(err.response?.data || 'Registration failed');
+      if (err.response) {
+        // 서버가 응답을 반환한 경우
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        setError(err.response.data || 'Registration failed');
+      } else if (err.request) {
+        // 요청은 보냈지만 응답을 받지 못한 경우
+        console.error('No response received:', err.request);
+        setError('Server is not responding. Please try again later.');
+      } else {
+        // 요청 설정 중 에러가 발생한 경우
+        console.error('Error setting up request:', err.message);
+        setError('An error occurred. Please try again.');
+      }
     }
   };
 
