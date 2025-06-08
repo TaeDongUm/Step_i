@@ -36,6 +36,8 @@ const Register = () => {
                 lastName: formData.lastName,
                 email: formData.email,
                 password: formData.password
+            }, {
+                withCredentials: true
             });
 
             if (response.status === 201) {
