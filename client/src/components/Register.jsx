@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -9,6 +12,7 @@ const Register = () => {
     confirm: '',
     agree: false
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,16 +22,75 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // 회원가입 처리 로직 자리
+    setError('');
+
+    // 비밀번호 확인
+    if (form.password !== form.confirm) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // 이용약관 동의 확인
+    if (!form.agree) {
+      setError('Please agree to the terms of service and privacy policy');
+      return;
+    }
+
+    try {
+      console.log('Sending registration request with data:', {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password
+      });
+
+      const response = await axios.post('http://localhost:8080/api/auth/register',
+        {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true
+        }
+      );
+
+      console.log('Registration response:', response);
+
+      if (response.status === 201) {
+        // 회원가입 성공 시 로그인 페이지로 이동
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      if (err.response) {
+        // 서버가 응답을 반환한 경우
+        console.error('Error response data:', err.response.data);
+        console.error('Error response status:', err.response.status);
+        setError(err.response.data || 'Registration failed');
+      } else if (err.request) {
+        // 요청은 보냈지만 응답을 받지 못한 경우
+        console.error('No response received:', err.request);
+        setError('Server is not responding. Please try again later.');
+      } else {
+        // 요청 설정 중 에러가 발생한 경우
+        console.error('Error setting up request:', err.message);
+        setError('An error occurred. Please try again.');
+      }
+    }
   };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
         <div style={{ fontSize: 32, marginBottom: 8 }}>🏅</div>
-        <div style={{ fontWeight: 600, fontSize: 20 }}>RoutineRise</div>
+        <div style={{ fontWeight: 600, fontSize: 20 }}>Stepi</div>
       </div>
       <form onSubmit={handleSubmit} style={{
         background: '#fff',
@@ -42,6 +105,9 @@ const Register = () => {
         <div style={{ color: '#888', fontSize: 15, marginBottom: 24 }}>
           Enter your information to get started
         </div>
+        {error && (
+          <div style={{ color: '#ff4d4f', marginBottom: 16, fontSize: 14 }}>{error}</div>
+        )}
         <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
             <label style={{ fontWeight: 500 }}>First name</label>
